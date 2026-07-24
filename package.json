@@ -1,0 +1,12 @@
+{
+  "name": "adhyay-pdf-reader",
+  "version": "1.0.0",
+  "description": "Adhyay PDF Reader Desktop Application",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "devDependencies": {
+    "electron": "^28.0.0"
+  }
+}

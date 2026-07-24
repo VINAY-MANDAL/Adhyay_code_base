@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="hi" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Adhyay PDF Reader</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+  <!-- Top Navigation Header -->
+  <header class="top-bar">
+    <div class="brand">
+      <span class="logo-icon">A</span>
+      <h1 class="logo-text">Adhyay<span>.</span></h1>
+    </div>
+    
+    <nav class="top-nav">
+      <button class="nav-btn active" data-i18n="nav_home">Home</button>
+      <button class="nav-btn" data-i18n="nav_library">Library</button>
+      <button class="nav-btn" data-i18n="nav_favorites">Favorites</button>
+      <button class="nav-btn" data-i18n="nav_shared">Shared</button>
+    </nav>
+
+    <div class="search-box">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input type="text" id="searchInput" placeholder="Apni files khoje..." data-i18n-placeholder="search_placeholder">
+    </div>
+
+    <div class="top-actions">
+      <button class="btn-primary" id="uploadBtn">
+        <i class="fa-solid fa-upload"></i> <span data-i18n="upload_pdf">Upload PDF</span>
+      </button>
+      <button id="themeToggleBtn" class="icon-btn" title="Toggle Theme">
+        <i class="fa-solid fa-moon"></i>
+      </button>
+      <div class="profile-avatar">RS</div>
+    </div>
+  </header>
+
+  <div class="main-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <ul class="menu-list">
+        <li class="menu-item active"><i class="fa-solid fa-house"></i> <span data-i18n="nav_home">Home</span></li>
+        <li class="menu-item"><i class="fa-solid fa-book-open"></i> <span data-i18n="nav_library">Library</span></li>
+        <li class="menu-item"><i class="fa-solid fa-star"></i> <span data-i18n="nav_favorites">Favorites</span></li>
+        <li class="menu-item"><i class="fa-solid fa-share-nodes"></i> <span data-i18n="shared_with_me">Shared with me</span></li>
+        <li class="menu-item"><i class="fa-solid fa-trash"></i> <span data-i18n="trash">Trash</span></li>
+      </ul>
+
+      <div class="folder-section">
+        <h4 data-i18n="folders">FOLDERS</h4>
+        <ul class="menu-list">
+          <li class="menu-item"><i class="fa-regular fa-folder"></i> <span data-i18n="folder_study">Study notes</span></li>
+          <li class="menu-item"><i class="fa-regular fa-folder"></i> <span data-i18n="folder_novels">Novels</span></li>
+          <li class="menu-item"><i class="fa-regular fa-folder"></i> <span data-i18n="folder_work">Work</span></li>
+        </ul>
+      </div>
+
+      <div class="sidebar-footer">
+        <li class="menu-item"><i class="fa-solid fa-gear"></i> <span data-i18n="settings">Settings</span></li>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="content-area">
+      <!-- Dashboard / Library View -->
+      <section id="dashboardView">
+        <div class="greeting-header">
+          <h2>Namaste, Raghav</h2>
+          <p>Aapne pichli baar jaha chhoda tha, wahi se shuru kare</p>
+        </div>
+
+        <!-- Continue Reading Cards Grid -->
+        <div class="section-title">
+          <h3 data-i18n="continue_reading">Continue reading</h3>
+        </div>
+        <div class="cards-grid">
+          <div class="pdf-card" data-bg="#2D2A4A">
+            <span class="badge">62%</span>
+            <div class="card-footer">
+              <h4>Adhyay ki Bhoomika</h4>
+              <p>Panna 12 / 248</p>
+            </div>
+          </div>
+          <div class="pdf-card" data-bg="#1E3830">
+            <span class="badge">28%</span>
+            <div class="card-footer">
+              <h4>Ganit ke Siddhant</h4>
+              <p>Panna 40 / 190</p>
+            </div>
+          </div>
+          <div class="pdf-card" data-bg="#3C3225">
+            <span class="badge">91%</span>
+            <div class="card-footer">
+              <h4>Vigyan Darshan</h4>
+              <p>Panna 210 / 230</p>
+            </div>
+          </div>
+          <div class="pdf-card" data-bg="#293040">
+            <span class="badge">10%</span>
+            <div class="card-footer">
+              <h4>Itihas ki Jhalak</h4>
+              <p>Panna 8 / 160</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Files Section -->
+        <div class="recent-files-header">
+          <h3 data-i18n="recent_files">Recent files</h3>
+          <a href="#" class="see-all">Sab dekhe</a>
+        </div>
+        <div class="files-list">
+          <div class="file-row">
+            <div class="file-info">
+              <div class="file-icon"></div>
+              <div>
+                <h5>Adhyay ki Bhoomika.pdf</h5>
+                <p>2.4 MB • Kal edit kiya</p>
+              </div>
+            </div>
+            <span class="progress-text">62%</span>
+          </div>
+          <div class="file-row">
+            <div class="file-info">
+              <div class="file-icon"></div>
+              <div>
+                <h5>Ganit ke Siddhant.pdf</h5>
+                <p>5.1 MB • 3 din pehle</p>
+              </div>
+            </div>
+            <span class="progress-text">28%</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Advanced Canvas PDF Reader View (Initially Hidden) -->
+      <section id="readerView" class="hidden">
+        <div class="annotation-toolbar">
+          <button id="toolSelect" class="tool-btn active"><i class="fa-solid fa-arrow-pointer"></i></button>
+          <button id="toolPencil" class="tool-btn"><i class="fa-solid fa-pen"></i></button>
+          <button id="toolMarker" class="tool-btn"><i class="fa-solid fa-highlighter"></i></button>
+          <button id="toolEraser" class="tool-btn"><i class="fa-solid fa-eraser"></i></button>
+          <input type="color" id="strokeColor" value="#E5A93C">
+          <input type="range" id="strokeWidth" min="1" max="20" value="3">
+          <button id="shareBtn" class="btn-primary-sm"><i class="fa-solid fa-share"></i> Share</button>
+        </div>
+
+        <div class="pdf-viewport">
+          <canvas id="pdfCanvas"></canvas>
+          <canvas id="annotationCanvas"></canvas>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+  <script src="pdf_viewer.js"></script>
+</body>
+</html>
