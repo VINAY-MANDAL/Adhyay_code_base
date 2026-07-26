@@ -6,8 +6,10 @@
   <title>Adhyay PDF Reader</title>
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 </head>
 <body>
+
   <!-- Top Navigation Header -->
   <header class="top-bar">
     <div class="brand">
@@ -31,13 +33,26 @@
       <button class="btn-primary" id="uploadBtn">
         <i class="fa-solid fa-upload"></i> <span data-i18n="upload_pdf">Upload PDF</span>
       </button>
+      <input type="file" id="pdfFileInput" accept="application/pdf" style="display:none;">
+      
       <button id="themeToggleBtn" class="icon-btn" title="Toggle Theme">
         <i class="fa-solid fa-moon"></i>
       </button>
-      <div class="profile-avatar">RS</div>
+      <div class="profile-avatar" id="userAvatar">A</div>
     </div>
   </header>
 
+  <!-- Onboarding Modal (First-time User Popup) -->
+  <div id="nameModal" class="modal-overlay">
+    <div class="modal-card">
+      <h3>Aapka Naam Kya Hai?</h3>
+      <p>Adhyay PDF Reader me aapka swagat hai.</p>
+      <input type="text" id="usernameInput" placeholder="Apna naam likhein (e.g., Vinay)">
+      <button id="saveNameBtn" class="btn-primary">Aage Badhein</button>
+    </div>
+  </div>
+
+  <!-- Main Application Body -->
   <div class="main-layout">
     <!-- Sidebar -->
     <aside class="sidebar">
@@ -63,16 +78,16 @@
       </div>
     </aside>
 
-    <!-- Main Content Area -->
+    <!-- Main Content View -->
     <main class="content-area">
-      <!-- Dashboard / Library View -->
+      <!-- Dashboard View -->
       <section id="dashboardView">
         <div class="greeting-header">
-          <h2>Namaste, Raghav</h2>
+          <h2 id="userGreeting">Namaste, User</h2>
           <p>Aapne pichli baar jaha chhoda tha, wahi se shuru kare</p>
         </div>
 
-        <!-- Continue Reading Cards Grid -->
+        <!-- Continue Reading Grid -->
         <div class="section-title">
           <h3 data-i18n="continue_reading">Continue reading</h3>
         </div>
@@ -139,14 +154,36 @@
       <!-- Advanced Canvas PDF Reader View (Initially Hidden) -->
       <section id="readerView" class="hidden">
         <div class="annotation-toolbar">
-          <button id="toolSelect" class="tool-btn active"><i class="fa-solid fa-arrow-pointer"></i></button>
-          <button id="toolPencil" class="tool-btn"><i class="fa-solid fa-pen"></i></button>
-          <button id="toolMarker" class="tool-btn"><i class="fa-solid fa-highlighter"></i></button>
-          <button id="toolEraser" class="tool-btn"><i class="fa-solid fa-eraser"></i></button>
-          <input type="color" id="strokeColor" value="#E5A93C">
-          <input type="range" id="strokeWidth" min="1" max="20" value="3">
-          <button id="shareBtn" class="btn-primary-sm"><i class="fa-solid fa-share"></i> Share</button>
-        </div>
+  <!-- Tools -->
+  <button id="toolSelect" class="tool-btn active"><i class="fa-solid fa-arrow-pointer"></i></button>
+  <button id="toolPencil" class="tool-btn"><i class="fa-solid fa-pen"></i></button>
+  <button id="toolMarker" class="tool-btn"><i class="fa-solid fa-highlighter"></i></button>
+  <button id="toolEraser" class="tool-btn"><i class="fa-solid fa-eraser"></i></button>
+  
+  <input type="color" id="strokeColor" value="#E5A93C">
+
+  <span class="toolbar-divider"></span>
+
+  <!-- Page Navigation (1200 pages handle karne ke liye) -->
+  <button id="prevPage" class="tool-btn"><i class="fa-solid fa-chevron-left"></i></button>
+  <span class="page-info">
+    <input type="number" id="pageNumberInput" value="1" min="1" style="width: 45px; text-align: center; background: var(--bg-primary); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 4px;"> 
+    / <span id="totalPages">0</span>
+  </span>
+  <button id="nextPage" class="tool-btn"><i class="fa-solid fa-chevron-right"></i></button>
+
+  <span class="toolbar-divider"></span>
+
+  <!-- Dynamic Responsive Zoom Slider -->
+  <div class="zoom-control">
+    <i class="fa-solid fa-magnifying-glass-minus"></i>
+    <input type="range" id="zoomSlider" min="50" max="300" value="100" style="width: 100px; cursor: pointer;">
+    <i class="fa-solid fa-magnifying-glass-plus"></i>
+    <span id="zoomVal">100%</span>
+  </div>
+
+  <button id="shareBtn" class="btn-primary-sm" style="margin-left: auto;"><i class="fa-solid fa-share"></i> Share</button>
+</div>
 
         <div class="pdf-viewport">
           <canvas id="pdfCanvas"></canvas>

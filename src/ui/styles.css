@@ -217,11 +217,27 @@ body {
 .annotation-toolbar {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   background: var(--bg-secondary);
-  padding: 10px;
+  padding: 8px 15px;
   border-radius: 8px;
   margin-bottom: 15px;
+  flex-wrap: wrap;
+}
+
+.toolbar-divider {
+  width: 1px;
+  height: 20px;
+  background: var(--border-color);
+  margin: 0 5px;
+}
+
+.zoom-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-muted);
 }
 
 .tool-btn {
@@ -241,11 +257,69 @@ body {
 .pdf-viewport {
   position: relative;
   width: 100%;
-  height: 80vh;
-  overflow: auto;
+  height: 78vh;
+  overflow: auto; /* Internal Scrolling */
   background: var(--bg-card);
   display: flex;
   justify-content: center;
+  align-items: flex-start;
+  padding: 20px;
+  border-radius: 8px;
+}
+
+.pdf-viewport canvas {
+  box-shadow: 0 8px 25px rgba(0,0,0,0.5);
+  border-radius: 4px;
 }
 
 canvas { position: absolute; top: 0; }
+
+
+
+/* Modal Overlay & Styling */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; width: 100vw; height: 100vh;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(5px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  padding: 30px;
+  border-radius: 12px;
+  text-align: center;
+  width: 360px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+.modal-card h3 {
+  margin-bottom: 8px;
+  color: var(--accent-color);
+}
+
+.modal-card p {
+  color: var(--text-muted);
+  font-size: 14px;
+  margin-bottom: 20px;
+}
+
+.modal-card input {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-primary);
+  color: var(--text-main);
+  outline: none;
+  margin-bottom: 16px;
+}
+
+.modal-card button {
+  width: 100%;
+}

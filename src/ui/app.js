@@ -115,3 +115,77 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('strokeColor').onchange = (e) => annotator.setColor(e.target.value);
   document.getElementById('strokeWidth').oninput = (e) => annotator.setWidth(e.target.value);
 });
+
+
+document.addEventListener('DOMContentLoaded', () => {
+  // 1. DYNAMIC USER NAME & GREETING SYSTEM
+  const modal = document.getElementById('nameModal');
+  const nameInput = document.getElementById('usernameInput');
+  const saveBtn = document.getElementById('saveNameBtn');
+  const greeting = document.getElementById('userGreeting');
+  const avatar = document.getElementById('userAvatar');
+
+  // Check LocalStorage
+  const savedName = localStorage.getItem('adhyay_user_name');
+
+  if (!savedName) {
+    modal.classList.remove('hidden');
+  } else {
+    modal.style.display = 'none';
+    updateUserUI(savedName);
+  }
+
+  saveBtn.addEventListener('click', () => {
+    const name = nameInput.value.trim();
+    if (name) {
+      localStorage.setItem('adhyay_user_name', name);
+      updateUserUI(name);
+      modal.style.display = 'none';
+    }
+  });
+
+  function updateUserUI(name) {
+    greeting.textContent = `Namaste, ${name}`;
+    // Generate Initials (e.g., Gemini -> GE / G)
+    const initials = name.substring(0, 2).toUpperCase();
+    if(avatar) avatar.textContent = initials;
+  }
+
+  // 2. NATIVE FILE PICKER & PDF OPENING SYSTEM
+  const uploadBtn = document.getElementById('uploadBtn');
+  const fileInput = document.getElementById('pdfFileInput');
+  const dashboardView = document.getElementById('dashboardView');
+  const readerView = document.getElementById('readerView');
+
+  // Trigger File Input Click
+  uploadBtn.addEventListener('click', () => {
+    fileInput.click();
+  });
+
+  // Handle File Selection
+  fileInput.addEventListener('change', (event) => {
+    const file = event.target.files[0];
+    if (file && file.type === 'application/pdf') {
+      console.log('Opening PDF File:', file.name, file.path);
+
+      // Hide Dashboard, Show PDF Viewer View
+      dashboardView.classList.add('hidden');
+      readerView.classList.remove('hidden');
+
+      // Call PDF Canvas Render function
+      loadPDFToCanvas(file);
+    }
+  });
+
+  function loadPDFToCanvas(file) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const arrayBuffer = e.target.result;
+
+
+    //call pdf.js engine functionm from pdf_viewer.js
+      renderPDFFile(arrayBuffer);
+    };
+    reader.readAsArrayBuffer(file);
+  }
+});
