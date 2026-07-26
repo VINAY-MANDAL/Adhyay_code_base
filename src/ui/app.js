@@ -1,8 +1,4 @@
-// Native C++ Core Module Loader (Electron Bridge)
-// const { PDFEngine } = require('./build/Release/adhyay_core.node');
-// const engine = new PDFEngine();
-
-// i18n Translation Dictionary
+// Translation Dictionary
 const translations = {
   en: {
     nav_home: "Home",
@@ -32,160 +28,209 @@ function applyLanguage(lang) {
   currentLang = lang;
   document.querySelectorAll('[data-i18n]').forEach(el => {
     const key = el.getAttribute('data-i18n');
-    if (translations[lang][key]) el.textContent = translations[lang][key];
+    if (translations[lang] && translations[lang][key]) el.textContent = translations[lang][key];
   });
   document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
     const key = el.getAttribute('data-i18n-placeholder');
-    if (translations[lang][key]) el.placeholder = translations[lang][key];
+    if (translations[lang] && translations[lang][key]) el.placeholder = translations[lang][key];
   });
 }
 
-// Theme Switcher Logic
-const themeBtn = document.getElementById('themeToggleBtn');
-themeBtn.addEventListener('click', () => {
-  const currentTheme = document.documentElement.getAttribute('data-theme');
-  const nextTheme = currentTheme === 'dark' ? 'light' : 'dark';
-  document.documentElement.setAttribute('data-theme', nextTheme);
-  themeBtn.querySelector('i').className = nextTheme === 'dark' ? 'fa-solid fa-moon' : 'fa-solid fa-sun';
-});
-
-// Dynamic Card Background Colors
-document.querySelectorAll('.pdf-card').forEach(card => {
-  const bg = card.getAttribute('data-bg');
-  if (bg) card.style.backgroundColor = bg;
-});
-
-// Canvas Annotation Engine
-class AnnotationEngine {
-  constructor(canvasId) {
-    this.canvas = document.getElementById(canvasId);
-    this.ctx = this.canvas.getContext('2d');
-    this.isDrawing = false;
-    this.mode = 'pencil'; // pencil, marker, eraser
-    this.color = '#E5A93C';
-    this.lineWidth = 3;
-
-    this.initEvents();
-  }
-
-  setMode(mode) { this.mode = mode; }
-  setColor(color) { this.color = color; }
-  setWidth(width) { this.lineWidth = width; }
-
-  initEvents() {
-    this.canvas.addEventListener('mousedown', (e) => this.startDrawing(e));
-    this.canvas.addEventListener('mousemove', (e) => this.draw(e));
-    this.canvas.addEventListener('mouseup', () => this.stopDrawing());
-  }
-
-  startDrawing(e) {
-    this.isDrawing = true;
-    this.ctx.beginPath();
-    this.ctx.moveTo(e.offsetX, e.offsetY);
-  }
-
-  draw(e) {
-    if (!this.isDrawing) return;
-
-    if (this.mode === 'eraser') {
-      this.ctx.clearRect(e.offsetX - 10, e.offsetY - 10, 20, 20);
+// LocalStorage Helper
+const AdhyayStorage = {
+  getFiles: () => JSON.parse(localStorage.getItem('adhyay_recent_pdfs') || '[]'),
+  
+  saveFile: (fileData) => {
+    let files = AdhyayStorage.getFiles();
+    const existingIndex = files.findIndex(f => f.name === fileData.name);
+    
+    if (existingIndex > -1) {
+      files[existingIndex] = { ...files[existingIndex], ...fileData };
     } else {
-      this.ctx.strokeStyle = this.mode === 'marker' ? this.color + '80' : this.color; // Translucent for marker
-      this.ctx.lineWidth = this.mode === 'marker' ? this.lineWidth * 4 : this.lineWidth;
-      this.ctx.lineCap = 'round';
-      this.ctx.lineTo(e.offsetX, e.offsetY);
-      this.ctx.stroke();
+      files.unshift(fileData);
+    }
+    
+    localStorage.setItem('adhyay_recent_pdfs', JSON.stringify(files.slice(0, 10)));
+    renderDashboardUI();
+  },
+
+  toggleFavorite: (fileName) => {
+    let files = AdhyayStorage.getFiles();
+    const item = files.find(f => f.name === fileName);
+    if (item) {
+      item.isFavorite = !item.isFavorite;
+      localStorage.setItem('adhyay_recent_pdfs', JSON.stringify(files));
+      renderDashboardUI();
     }
   }
+};
 
-  stopDrawing() {
-    this.isDrawing = false;
+// View Controllers
+function switchToReaderView() {
+  const dashboardView = document.getElementById('dashboardView');
+  const readerView = document.getElementById('readerView');
+
+  if (dashboardView && readerView) {
+    dashboardView.classList.add('hidden');
+    readerView.classList.remove('hidden');
   }
 }
 
-// Initialize System
+function switchToDashboardView() {
+  const dashboardView = document.getElementById('dashboardView');
+  const readerView = document.getElementById('readerView');
+
+  if (dashboardView && readerView) {
+    readerView.classList.add('hidden');
+    dashboardView.classList.remove('hidden');
+    renderDashboardUI();
+  }
+}
+
+function openPDFFromStorage(fileData) {
+  switchToReaderView();
+  const pageInput = document.getElementById('pageNumberInput');
+  if (pageInput) pageInput.value = fileData.currentPage || 1;
+}
+
+// Render Home Dashboard
+function renderDashboardUI() {
+  const grid = document.getElementById('continueReadingGrid');
+  const list = document.getElementById('recentFilesList');
+  const files = AdhyayStorage.getFiles();
+
+  if (!grid || !list) return;
+
+  grid.innerHTML = '';
+  list.innerHTML = '';
+
+  if (files.length === 0) {
+    grid.innerHTML = `<p style="color:var(--text-muted); grid-column: 1/-1;">Koi PDF nahi mili. Upload PDF button se add karein!</p>`;
+    return;
+  }
+
+  files.forEach(file => {
+    // Grid Card
+    const card = document.createElement('div');
+    card.className = 'pdf-card';
+    if (file.coverImg) card.style.backgroundImage = `url(${file.coverImg})`;
+
+    card.innerHTML = `
+      <div class="card-top-bar">
+        <span class="badge">${file.progress}%</span>
+        <button class="star-btn ${file.isFavorite ? 'active' : ''}" data-name="${file.name}">
+          <i class="fa-${file.isFavorite ? 'solid' : 'regular'} fa-star"></i>
+        </button>
+      </div>
+      <div class="card-footer">
+        <h4>${file.name}</h4>
+        <p>Panna ${file.currentPage} / ${file.totalPages}</p>
+      </div>
+    `;
+
+    const starBtn = card.querySelector('.star-btn');
+    if (starBtn) {
+      starBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        AdhyayStorage.toggleFavorite(file.name);
+      });
+    }
+
+    card.addEventListener('click', () => openPDFFromStorage(file));
+    grid.appendChild(card);
+
+    // List Row
+    const row = document.createElement('div');
+    row.className = 'file-row';
+    row.style.cursor = 'pointer';
+    row.innerHTML = `
+      <div class="file-info">
+        <i class="fa-solid fa-file-pdf" style="color:var(--accent-color); font-size: 22px;"></i>
+        <div>
+          <h5>${file.name}</h5>
+          <p>Total Pages: ${file.totalPages}</p>
+        </div>
+      </div>
+      <span class="progress-text">${file.progress}%</span>
+    `;
+
+    row.addEventListener('click', () => openPDFFromStorage(file));
+    list.appendChild(row);
+  });
+}
+
+// Event Setup
 document.addEventListener('DOMContentLoaded', () => {
   applyLanguage('hi');
-  const annotator = new AnnotationEngine('annotationCanvas');
 
-  // Bind tools
-  document.getElementById('toolPencil').onclick = () => annotator.setMode('pencil');
-  document.getElementById('toolMarker').onclick = () => annotator.setMode('marker');
-  document.getElementById('toolEraser').onclick = () => annotator.setMode('eraser');
-  document.getElementById('strokeColor').onchange = (e) => annotator.setColor(e.target.value);
-  document.getElementById('strokeWidth').oninput = (e) => annotator.setWidth(e.target.value);
-});
+  // Home Navigation Buttons
+  const navHome = document.getElementById('navHomeBtn');
+  const sideHome = document.getElementById('sideHomeBtn');
+  if (navHome) navHome.addEventListener('click', switchToDashboardView);
+  if (sideHome) sideHome.addEventListener('click', switchToDashboardView);
 
+  // Theme Switcher
+  const themeBtn = document.getElementById('themeToggleBtn');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', () => {
+      const currentTheme = document.documentElement.getAttribute('data-theme');
+      const nextTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', nextTheme);
+      themeBtn.querySelector('i').className = nextTheme === 'dark' ? 'fa-solid fa-moon' : 'fa-solid fa-sun';
+    });
+  }
 
-document.addEventListener('DOMContentLoaded', () => {
-  // 1. DYNAMIC USER NAME & GREETING SYSTEM
+  // User Greeting Setup
   const modal = document.getElementById('nameModal');
   const nameInput = document.getElementById('usernameInput');
   const saveBtn = document.getElementById('saveNameBtn');
   const greeting = document.getElementById('userGreeting');
   const avatar = document.getElementById('userAvatar');
 
-  // Check LocalStorage
   const savedName = localStorage.getItem('adhyay_user_name');
-
   if (!savedName) {
-    modal.classList.remove('hidden');
+    if (modal) modal.classList.remove('hidden');
   } else {
-    modal.style.display = 'none';
+    if (modal) modal.classList.add('hidden');
     updateUserUI(savedName);
   }
 
-  saveBtn.addEventListener('click', () => {
-    const name = nameInput.value.trim();
-    if (name) {
-      localStorage.setItem('adhyay_user_name', name);
-      updateUserUI(name);
-      modal.style.display = 'none';
-    }
-  });
+  if (saveBtn) {
+    saveBtn.addEventListener('click', () => {
+      const name = nameInput.value.trim();
+      if (name) {
+        localStorage.setItem('adhyay_user_name', name);
+        updateUserUI(name);
+        if (modal) modal.classList.add('hidden');
+      }
+    });
+  }
 
   function updateUserUI(name) {
-    greeting.textContent = `Namaste, ${name}`;
-    // Generate Initials (e.g., Gemini -> GE / G)
-    const initials = name.substring(0, 2).toUpperCase();
-    if(avatar) avatar.textContent = initials;
+    if (greeting) greeting.textContent = `Namaste, ${name}`;
+    if (avatar) avatar.textContent = name.substring(0, 2).toUpperCase();
   }
 
-  // 2. NATIVE FILE PICKER & PDF OPENING SYSTEM
+  // Upload Logic
   const uploadBtn = document.getElementById('uploadBtn');
   const fileInput = document.getElementById('pdfFileInput');
-  const dashboardView = document.getElementById('dashboardView');
-  const readerView = document.getElementById('readerView');
 
-  // Trigger File Input Click
-  uploadBtn.addEventListener('click', () => {
-    fileInput.click();
-  });
+  if (uploadBtn && fileInput) {
+    uploadBtn.addEventListener('click', () => fileInput.click());
 
-  // Handle File Selection
-  fileInput.addEventListener('change', (event) => {
-    const file = event.target.files[0];
-    if (file && file.type === 'application/pdf') {
-      console.log('Opening PDF File:', file.name, file.path);
+    fileInput.addEventListener('change', (event) => {
+      const file = event.target.files[0];
+      if (file && file.type === 'application/pdf') {
+        switchToReaderView();
 
-      // Hide Dashboard, Show PDF Viewer View
-      dashboardView.classList.add('hidden');
-      readerView.classList.remove('hidden');
-
-      // Call PDF Canvas Render function
-      loadPDFToCanvas(file);
-    }
-  });
-
-  function loadPDFToCanvas(file) {
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      const arrayBuffer = e.target.result;
-
-
-    //call pdf.js engine functionm from pdf_viewer.js
-      renderPDFFile(arrayBuffer);
-    };
-    reader.readAsArrayBuffer(file);
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          renderPDFFile(e.target.result, file.name);
+        };
+        reader.readAsArrayBuffer(file);
+      }
+    });
   }
+
+  renderDashboardUI();
 });

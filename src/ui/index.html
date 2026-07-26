@@ -18,7 +18,7 @@
     </div>
     
     <nav class="top-nav">
-      <button class="nav-btn active" data-i18n="nav_home">Home</button>
+      <button class="nav-btn active" id="navHomeBtn" data-i18n="nav_home">Home</button>
       <button class="nav-btn" data-i18n="nav_library">Library</button>
       <button class="nav-btn" data-i18n="nav_favorites">Favorites</button>
       <button class="nav-btn" data-i18n="nav_shared">Shared</button>
@@ -42,8 +42,8 @@
     </div>
   </header>
 
-  <!-- Onboarding Modal (First-time User Popup) -->
-  <div id="nameModal" class="modal-overlay">
+  <!-- Onboarding Modal -->
+  <div id="nameModal" class="modal-overlay hidden">
     <div class="modal-card">
       <h3>Aapka Naam Kya Hai?</h3>
       <p>Adhyay PDF Reader me aapka swagat hai.</p>
@@ -57,7 +57,7 @@
     <!-- Sidebar -->
     <aside class="sidebar">
       <ul class="menu-list">
-        <li class="menu-item active"><i class="fa-solid fa-house"></i> <span data-i18n="nav_home">Home</span></li>
+        <li class="menu-item active" id="sideHomeBtn"><i class="fa-solid fa-house"></i> <span data-i18n="nav_home">Home</span></li>
         <li class="menu-item"><i class="fa-solid fa-book-open"></i> <span data-i18n="nav_library">Library</span></li>
         <li class="menu-item"><i class="fa-solid fa-star"></i> <span data-i18n="nav_favorites">Favorites</span></li>
         <li class="menu-item"><i class="fa-solid fa-share-nodes"></i> <span data-i18n="shared_with_me">Shared with me</span></li>
@@ -78,118 +78,63 @@
       </div>
     </aside>
 
-    <!-- Main Content View -->
+    <!-- Main Content Area -->
     <main class="content-area">
-      <!-- Dashboard View -->
+
+      <!-- 1. DASHBOARD VIEW -->
       <section id="dashboardView">
         <div class="greeting-header">
-          <h2 id="userGreeting">Namaste, User</h2>
+          <h2 id="userGreeting">Namaste</h2>
           <p>Aapne pichli baar jaha chhoda tha, wahi se shuru kare</p>
         </div>
 
-        <!-- Continue Reading Grid -->
         <div class="section-title">
           <h3 data-i18n="continue_reading">Continue reading</h3>
         </div>
-        <div class="cards-grid">
-          <div class="pdf-card" data-bg="#2D2A4A">
-            <span class="badge">62%</span>
-            <div class="card-footer">
-              <h4>Adhyay ki Bhoomika</h4>
-              <p>Panna 12 / 248</p>
-            </div>
-          </div>
-          <div class="pdf-card" data-bg="#1E3830">
-            <span class="badge">28%</span>
-            <div class="card-footer">
-              <h4>Ganit ke Siddhant</h4>
-              <p>Panna 40 / 190</p>
-            </div>
-          </div>
-          <div class="pdf-card" data-bg="#3C3225">
-            <span class="badge">91%</span>
-            <div class="card-footer">
-              <h4>Vigyan Darshan</h4>
-              <p>Panna 210 / 230</p>
-            </div>
-          </div>
-          <div class="pdf-card" data-bg="#293040">
-            <span class="badge">10%</span>
-            <div class="card-footer">
-              <h4>Itihas ki Jhalak</h4>
-              <p>Panna 8 / 160</p>
-            </div>
-          </div>
-        </div>
+        <div class="cards-grid" id="continueReadingGrid"></div>
 
-        <!-- Recent Files Section -->
         <div class="recent-files-header">
           <h3 data-i18n="recent_files">Recent files</h3>
           <a href="#" class="see-all">Sab dekhe</a>
         </div>
-        <div class="files-list">
-          <div class="file-row">
-            <div class="file-info">
-              <div class="file-icon"></div>
-              <div>
-                <h5>Adhyay ki Bhoomika.pdf</h5>
-                <p>2.4 MB • Kal edit kiya</p>
-              </div>
-            </div>
-            <span class="progress-text">62%</span>
-          </div>
-          <div class="file-row">
-            <div class="file-info">
-              <div class="file-icon"></div>
-              <div>
-                <h5>Ganit ke Siddhant.pdf</h5>
-                <p>5.1 MB • 3 din pehle</p>
-              </div>
-            </div>
-            <span class="progress-text">28%</span>
-          </div>
-        </div>
+        <div class="files-list" id="recentFilesList"></div>
       </section>
 
-      <!-- Advanced Canvas PDF Reader View (Initially Hidden) -->
+      <!-- 2. READER VIEW -->
       <section id="readerView" class="hidden">
         <div class="annotation-toolbar">
-  <!-- Tools -->
-  <button id="toolSelect" class="tool-btn active"><i class="fa-solid fa-arrow-pointer"></i></button>
-  <button id="toolPencil" class="tool-btn"><i class="fa-solid fa-pen"></i></button>
-  <button id="toolMarker" class="tool-btn"><i class="fa-solid fa-highlighter"></i></button>
-  <button id="toolEraser" class="tool-btn"><i class="fa-solid fa-eraser"></i></button>
-  
-  <input type="color" id="strokeColor" value="#E5A93C">
+          <button id="toolSelect" class="tool-btn active"><i class="fa-solid fa-arrow-pointer"></i></button>
+          <button id="toolPencil" class="tool-btn"><i class="fa-solid fa-pen"></i></button>
+          <button id="toolMarker" class="tool-btn"><i class="fa-solid fa-highlighter"></i></button>
+          <button id="toolEraser" class="tool-btn"><i class="fa-solid fa-eraser"></i></button>
+          
+          <input type="color" id="strokeColor" value="#E5A93C">
+          <span class="toolbar-divider"></span>
 
-  <span class="toolbar-divider"></span>
+          <button id="prevPage" class="tool-btn"><i class="fa-solid fa-chevron-left"></i></button>
+          <span class="page-info">
+            <input type="number" id="pageNumberInput" value="1" min="1" style="width: 50px; text-align: center; background: var(--bg-primary); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 4px; padding: 2px;"> 
+            / <span id="totalPages">0</span>
+          </span>
+          <button id="nextPage" class="tool-btn"><i class="fa-solid fa-chevron-right"></i></button>
 
-  <!-- Page Navigation (1200 pages handle karne ke liye) -->
-  <button id="prevPage" class="tool-btn"><i class="fa-solid fa-chevron-left"></i></button>
-  <span class="page-info">
-    <input type="number" id="pageNumberInput" value="1" min="1" style="width: 45px; text-align: center; background: var(--bg-primary); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 4px;"> 
-    / <span id="totalPages">0</span>
-  </span>
-  <button id="nextPage" class="tool-btn"><i class="fa-solid fa-chevron-right"></i></button>
+          <span class="toolbar-divider"></span>
 
-  <span class="toolbar-divider"></span>
+          <div class="zoom-control">
+            <i class="fa-solid fa-magnifying-glass-minus"></i>
+            <input type="range" id="zoomSlider" min="50" max="300" value="100" style="width: 100px; cursor: pointer;">
+            <i class="fa-solid fa-magnifying-glass-plus"></i>
+            <span id="zoomVal">100%</span>
+          </div>
 
-  <!-- Dynamic Responsive Zoom Slider -->
-  <div class="zoom-control">
-    <i class="fa-solid fa-magnifying-glass-minus"></i>
-    <input type="range" id="zoomSlider" min="50" max="300" value="100" style="width: 100px; cursor: pointer;">
-    <i class="fa-solid fa-magnifying-glass-plus"></i>
-    <span id="zoomVal">100%</span>
-  </div>
-
-  <button id="shareBtn" class="btn-primary-sm" style="margin-left: auto;"><i class="fa-solid fa-share"></i> Share</button>
-</div>
+          <button id="shareBtn" class="btn-primary-sm" style="margin-left: auto;"><i class="fa-solid fa-share"></i> Share</button>
+        </div>
 
         <div class="pdf-viewport">
-          <canvas id="pdfCanvas"></canvas>
-          <canvas id="annotationCanvas"></canvas>
+          <!-- Continuous rendering canvas elements will be injected here -->
         </div>
       </section>
+
     </main>
   </div>
 

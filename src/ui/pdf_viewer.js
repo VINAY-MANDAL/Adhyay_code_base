@@ -4,7 +4,8 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs
 let pdfDoc = null;
 let currentScale = 1.0;
 let pageRenderedStatus = {}; // Tracks kaunsa page render ho chuka hai
-let pageViewports = {}; // Standard heights and widths
+let currentFileName = "";
+let currentCoverDataUrl = "";
 
 const viewportContainer = document.querySelector('.pdf-viewport');
 const zoomSlider = document.getElementById('zoomSlider');
@@ -13,38 +14,49 @@ const pageInput = document.getElementById('pageNumberInput');
 const totalPagesSpan = document.getElementById('totalPages');
 
 /**
- * Main PDF Load Function (Continuous Virtual Layout)
+ * Main PDF Load Function (Continuous Virtual Layout & Cover Extraction)
  */
-async function renderPDFFile(arrayBuffer) {
+async function renderPDFFile(arrayBuffer, fileName = "Document.pdf") {
   try {
+    currentFileName = fileName;
     const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
     pdfDoc = await loadingTask.promise;
 
     totalPagesSpan.textContent = pdfDoc.numPages;
     pageInput.max = pdfDoc.numPages;
 
-    // Reset Container & Tracking
+    // 1. Generate Cover Image from First Page
+    const firstPage = await pdfDoc.getPage(1);
+    const sampleViewport = firstPage.getViewport({ scale: currentScale }); // Sample Viewport Fix
+    
+    const tempCanvas = document.createElement('canvas');
+    const coverViewport = firstPage.getViewport({ scale: 0.5 });
+    tempCanvas.width = coverViewport.width;
+    tempCanvas.height = coverViewport.height;
+    
+    await firstPage.render({
+      canvasContext: tempCanvas.getContext('2d'),
+      viewport: coverViewport
+    }).promise;
+
+    currentCoverDataUrl = tempCanvas.toDataURL('image/jpeg');
+
+    // 2. Save Initial Progress
+    updatePDFProgress(1);
+
+    // 3. Setup Placeholders & Observer
     viewportContainer.innerHTML = '';
     pageRenderedStatus = {};
-    pageViewports = {};
-
-    // Get First Page to estimate default dimensions
-    const firstPage = await pdfDoc.getPage(1);
-    const sampleViewport = firstPage.getViewport({ scale: currentScale });
-
-    // 1. Create Lightweight Skeleton DIV Placeholders for ALL pages
+    
     for (let pageNum = 1; pageNum <= pdfDoc.numPages; pageNum++) {
       createPageWrapper(pageNum, sampleViewport.width, sampleViewport.height);
     }
 
-    // 2. Setup Intersection Observer (Lazy Loading Engine)
     setupIntersectionObserver();
-
-    // 3. Setup Scroll Sync for Page Input UI
     setupScrollPageTracker();
 
   } catch (error) {
-    console.error("PDF Continuous Virtual Render Error:", error);
+    console.error("PDF Render Error:", error);
   }
 }
 
@@ -61,7 +73,6 @@ function createPageWrapper(pageNum, width, height) {
   wrapper.style.position = 'relative';
   wrapper.style.marginBottom = '25px';
 
-  // Placeholder Canvas
   const canvas = document.createElement('canvas');
   canvas.id = `canvas-page-${pageNum}`;
   canvas.width = width;
@@ -72,7 +83,7 @@ function createPageWrapper(pageNum, width, height) {
 }
 
 /**
- * Intersection Observer: Jab page screen par dikhne lage tabhi render karo
+ * Intersection Observer: Lazy Rendering for Smooth Performance
  */
 function setupIntersectionObserver() {
   const observer = new IntersectionObserver((entries) => {
@@ -80,14 +91,14 @@ function setupIntersectionObserver() {
       if (entry.isIntersecting) {
         const pageNum = parseInt(entry.target.getAttribute('data-page-number'));
         if (!pageRenderedStatus[pageNum]) {
-          pageRenderedStatus[pageNum] = true; // Mark as rendering/rendered
+          pageRenderedStatus[pageNum] = true;
           renderSingleCanvas(pageNum);
         }
       }
     });
   }, {
     root: viewportContainer,
-    rootMargin: '300px 0px 300px 0px', // Pre-render 300px before scrolling into view
+    rootMargin: '300px 0px 300px 0px',
     threshold: 0.1
   });
 
@@ -117,19 +128,32 @@ async function renderSingleCanvas(pageNum) {
       wrapper.style.minHeight = `${viewport.height}px`;
     }
 
-    const renderContext = {
-      canvasContext: ctx,
-      viewport: viewport
-    };
-
-    await page.render(renderContext).promise;
+    await page.render({ canvasContext: ctx, viewport: viewport }).promise;
   } catch (err) {
     console.error(`Error rendering page ${pageNum}:`, err);
   }
 }
 
 /**
- * Scroll par Page Number Input Box Update Karna
+ * Calculate Progress % & Auto Save to Local Storage
+ */
+function updatePDFProgress(currentPage) {
+  if (!pdfDoc || typeof AdhyayStorage === 'undefined') return;
+  
+  const totalPages = pdfDoc.numPages;
+  const progressPercent = Math.round((currentPage / totalPages) * 100);
+
+  AdhyayStorage.saveFile({
+    name: currentFileName,
+    currentPage: currentPage,
+    totalPages: totalPages,
+    progress: progressPercent,
+    coverImg: currentCoverDataUrl
+  });
+}
+
+/**
+ * Scroll par Page Number & Progress Tracker
  */
 function setupScrollPageTracker() {
   viewportContainer.addEventListener('scroll', () => {
@@ -146,21 +170,19 @@ function setupScrollPageTracker() {
     });
 
     pageInput.value = currentVisiblePage;
+    updatePDFProgress(currentVisiblePage);
   });
 }
 
-// Jump to specific page via Page Input Box
+// Navigation Events (Jump, Next, Prev)
 pageInput.addEventListener('change', (e) => {
   const pageNum = parseInt(e.target.value);
   if (pdfDoc && pageNum >= 1 && pageNum <= pdfDoc.numPages) {
     const targetWrapper = document.getElementById(`page-container-${pageNum}`);
-    if (targetWrapper) {
-      targetWrapper.scrollIntoView({ behavior: 'smooth' });
-    }
+    if (targetWrapper) targetWrapper.scrollIntoView({ behavior: 'smooth' });
   }
 });
 
-// Next / Previous Buttons Scroll Support
 document.getElementById('prevPage').addEventListener('click', () => {
   const current = parseInt(pageInput.value);
   if (current > 1) {
@@ -177,17 +199,16 @@ document.getElementById('nextPage').addEventListener('click', () => {
   }
 });
 
-// Real-time Zoom Slider Logic (Continuous View)
+// Real-time Zoom Slider Logic
 zoomSlider.addEventListener('input', (e) => {
   const zoomPercent = e.target.value;
   zoomVal.textContent = `${zoomPercent}%`;
   currentScale = zoomPercent / 100;
 
   if (pdfDoc) {
-    pageRenderedStatus = {}; // Reset render status
+    pageRenderedStatus = {};
     const currentScrollPage = pageInput.value;
 
-    // Re-render all wrappers with new dimensions
     pdfDoc.getPage(1).then(page => {
       const sampleViewport = page.getViewport({ scale: currentScale });
       document.querySelectorAll('.pdf-page-wrapper').forEach(wrapper => {
@@ -202,7 +223,6 @@ zoomSlider.addEventListener('input', (e) => {
         }
       });
 
-      // Scroll to current visible page and trigger re-observe
       const targetWrapper = document.getElementById(`page-container-${currentScrollPage}`);
       if (targetWrapper) targetWrapper.scrollIntoView();
       setupIntersectionObserver();
