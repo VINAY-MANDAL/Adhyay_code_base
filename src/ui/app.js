@@ -1,3 +1,40 @@
+// IndexedDB Engine for Full Offline PDF Storage
+const PDFStore = {
+  dbName: 'AdhyayPDFDB',
+  init: function() {
+    return new Promise((resolve, reject) => {
+      const request = indexedDB.open(this.dbName, 1);
+      request.onupgradeneeded = (e) => {
+        e.target.result.createObjectStore('pdfs', { keyPath: 'name' });
+      };
+      request.onsuccess = (e) => resolve(e.target.result);
+      request.onerror = (e) => reject(e);
+    });
+  },
+  savePDF: async function(name, buffer) {
+    try {
+      const db = await this.init();
+      const tx = db.transaction('pdfs', 'readwrite');
+      tx.objectStore('pdfs').put({ name, buffer });
+    } catch (err) {
+      console.error("PDF IndexedDB me save nahi ho saki:", err);
+    }
+  },
+  getPDF: async function(name) {
+    try {
+      const db = await this.init();
+      return new Promise((resolve) => {
+        const tx = db.transaction('pdfs', 'readonly');
+        const req = tx.objectStore('pdfs').get(name);
+        req.onsuccess = () => resolve(req.result ? req.result.buffer : null);
+        req.onerror = () => resolve(null);
+      });
+    } catch (err) {
+      return null;
+    }
+  }
+};
+
 // Translation Dictionary
 const translations = {
   en: {
@@ -87,10 +124,19 @@ function switchToDashboardView() {
   }
 }
 
-function openPDFFromStorage(fileData) {
-  switchToReaderView();
-  const pageInput = document.getElementById('pageNumberInput');
-  if (pageInput) pageInput.value = fileData.currentPage || 1;
+// Home screen card/row click logic
+async function openPDFFromStorage(fileData) {
+  const buffer = await PDFStore.getPDF(fileData.name);
+  
+  if (buffer) {
+    switchToReaderView();
+    renderPDFFile(buffer, fileData.name);
+
+    const pageInput = document.getElementById('pageNumberInput');
+    if (pageInput) pageInput.value = fileData.currentPage || 1;
+  } else {
+    alert(`"${fileData.name}" database me nahi mili. Kripya PDF upload button se ise dubara select karein.`);
+  }
 }
 
 // Render Home Dashboard
@@ -117,14 +163,14 @@ function renderDashboardUI() {
 
     card.innerHTML = `
       <div class="card-top-bar">
-        <span class="badge">${file.progress}%</span>
+        <span class="badge">${file.progress || 0}%</span>
         <button class="star-btn ${file.isFavorite ? 'active' : ''}" data-name="${file.name}">
           <i class="fa-${file.isFavorite ? 'solid' : 'regular'} fa-star"></i>
         </button>
       </div>
       <div class="card-footer">
         <h4>${file.name}</h4>
-        <p>Panna ${file.currentPage} / ${file.totalPages}</p>
+        <p>Panna ${file.currentPage || 1} / ${file.totalPages || '?'}</p>
       </div>
     `;
 
@@ -148,10 +194,10 @@ function renderDashboardUI() {
         <i class="fa-solid fa-file-pdf" style="color:var(--accent-color); font-size: 22px;"></i>
         <div>
           <h5>${file.name}</h5>
-          <p>Total Pages: ${file.totalPages}</p>
+          <p>Total Pages: ${file.totalPages || '?'}</p>
         </div>
       </div>
-      <span class="progress-text">${file.progress}%</span>
+      <span class="progress-text">${file.progress || 0}%</span>
     `;
 
     row.addEventListener('click', () => openPDFFromStorage(file));
@@ -159,9 +205,45 @@ function renderDashboardUI() {
   });
 }
 
-// Event Setup
+// Main Initialization Event
 document.addEventListener('DOMContentLoaded', () => {
   applyLanguage('hi');
+
+  // Single Clean Upload Logic
+  const uploadBtn = document.getElementById('uploadBtn');
+  const fileInput = document.getElementById('pdfFileInput');
+
+  if (uploadBtn && fileInput) {
+    uploadBtn.addEventListener('click', () => fileInput.click());
+
+    fileInput.addEventListener('change', (event) => {
+      const file = event.target.files[0];
+      if (file && file.type === 'application/pdf') {
+        
+        const reader = new FileReader();
+        reader.onload = async function(e) {
+          const arrayBuffer = e.target.result;
+
+          // 1. IndexedDB me binary content save karein
+          await PDFStore.savePDF(file.name, arrayBuffer);
+
+          // 2. LocalStorage me file record entry add karein
+          AdhyayStorage.saveFile({
+            name: file.name,
+            currentPage: 1,
+            totalPages: 1, // pdf_viewer.js jab render karega tab real total pages update kar dega
+            progress: 0,
+            isFavorite: false
+          });
+
+          // 3. Reader view Switch & Render
+          switchToReaderView();
+          renderPDFFile(arrayBuffer, file.name);
+        };
+        reader.readAsArrayBuffer(file);
+      }
+    });
+  }
 
   // Home Navigation Buttons
   const navHome = document.getElementById('navHomeBtn');
@@ -211,26 +293,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (avatar) avatar.textContent = name.substring(0, 2).toUpperCase();
   }
 
-  // Upload Logic
-  const uploadBtn = document.getElementById('uploadBtn');
-  const fileInput = document.getElementById('pdfFileInput');
-
-  if (uploadBtn && fileInput) {
-    uploadBtn.addEventListener('click', () => fileInput.click());
-
-    fileInput.addEventListener('change', (event) => {
-      const file = event.target.files[0];
-      if (file && file.type === 'application/pdf') {
-        switchToReaderView();
-
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          renderPDFFile(e.target.result, file.name);
-        };
-        reader.readAsArrayBuffer(file);
-      }
-    });
-  }
-
+  // Initial Dashboard Load
   renderDashboardUI();
 });
