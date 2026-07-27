@@ -619,3 +619,13 @@ body {
   background: #ff5252;
   color: #fff;
 }
+
+
+/* Collapse Sidebar when Reader Mode is Active */
+.main-layout.sidebar-collapsed .sidebar {
+  display: none !important;
+}
+
+.main-layout.sidebar-collapsed .content-area {
+  padding: 15px; /* Full width viewport space dene ke liye */
+}

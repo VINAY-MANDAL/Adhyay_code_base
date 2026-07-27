@@ -172,12 +172,16 @@ function switchView(viewName) {
     if (el) el.classList.add('hidden');
   });
 
+  const mainLayout = document.querySelector('.main-layout');
+  if (mainLayout) {
+    mainLayout.classList.toggle('sidebar-collapsed', viewName === 'reader');
+  }
+
   const targetView = document.getElementById(viewName + 'View');
   if (targetView) {
     targetView.classList.remove('hidden');
   }
 
-  // Active Highlight on Navigation Links
   document.querySelectorAll('.menu-item, .nav-btn').forEach(btn => {
     btn.classList.remove('active');
   });
@@ -187,6 +191,10 @@ function switchView(viewName) {
 
 function switchToReaderView() {
   switchView('reader');
+}
+
+function switchToDashboardView() {
+  switchView('dashboard');
 }
 
 // Reusable Card Generator
@@ -205,7 +213,7 @@ function createPDFCard(file) {
         <div class="menu-dropdown-container">
           <button class="three-dots-btn"><i class="fa-solid fa-ellipsis-vertical"></i></button>
           <div class="dropdown-menu hidden">
-            <button class="delete-pdf-btn"><i class="fa-solid fa-trash"></i> Trash me bhejein</button>
+            <button class="delete-pdf-btn"><i class="fa-solid fa-trash"></i> move to trash</button>
           </div>
         </div>
       </div>
@@ -246,6 +254,7 @@ function renderAllViews() {
   renderDashboardUI();
   renderLibraryUI();
   renderFavoritesUI();
+  renderSharedUI();
   renderTrashUI();
 }
 
@@ -283,7 +292,7 @@ function renderDashboardUI() {
         <div class="menu-dropdown-container">
           <button class="three-dots-btn"><i class="fa-solid fa-ellipsis-vertical"></i></button>
           <div class="dropdown-menu hidden">
-            <button class="delete-pdf-btn"><i class="fa-solid fa-trash"></i> Trash me bhejein</button>
+            <button class="delete-pdf-btn"><i class="fa-solid fa-trash"></i> move to trash</button>
           </div>
         </div>
       </div>
@@ -372,6 +381,20 @@ function renderTrashUI() {
 
     list.appendChild(row);
   });
+}
+
+function renderSharedUI() {
+  const grid = document.getElementById('sharedGrid');
+  if (!grid) return;
+  grid.innerHTML = '';
+
+  grid.innerHTML = `
+    <div class="empty-state" style="grid-column: 1/-1;">
+      <i class="fa-solid fa-share-nodes"></i>
+      <h3>Koi Shared File Nahi Hai</h3>
+      <p>Aapke sath share ki gayi PDFs yahan dikhai dengi.</p>
+    </div>
+  `;
 }
 
 // Close Dropdowns on Click Outside
