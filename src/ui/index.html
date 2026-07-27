@@ -171,36 +171,43 @@
       <!-- 2. READER VIEW -->
       <section id="readerView" class="hidden">
         <div class="annotation-toolbar">
-          <button id="toolSelect" class="tool-btn active"><i class="fa-solid fa-arrow-pointer"></i></button>
-          <button id="toolPencil" class="tool-btn"><i class="fa-solid fa-pen"></i></button>
-          <button id="toolMarker" class="tool-btn"><i class="fa-solid fa-highlighter"></i></button>
-          <button id="toolEraser" class="tool-btn"><i class="fa-solid fa-eraser"></i></button>
-          
-          <input type="color" id="strokeColor" value="#E5A93C">
-          <span class="toolbar-divider"></span>
+          <!-- Group 1: Drawing Tools -->
+          <div class="tool-group">
+            <button class="tool-btn active" id="toolSelect" title="Select"><i class="fas fa-mouse-pointer"></i></button>
+            <button class="tool-btn" id="toolPencil" title="Pencil"><i class="fas fa-pen"></i></button>
+            <button class="tool-btn" id="toolMarker" title="Highlighter"><i class="fas fa-highlighter"></i></button>
+            <button class="tool-btn" id="toolEraser" title="Eraser"><i class="fas fa-eraser"></i></button>
+            <input type="color" id="strokeColor" value="#E5A93C" title="Pick Color">
+          </div>
 
-          <button id="prevPage" class="tool-btn"><i class="fa-solid fa-chevron-left"></i></button>
-          <span class="page-info">
-            <input type="number" id="pageNumberInput" value="1" min="1" style="width: 50px; text-align: center; background: var(--bg-primary); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 4px; padding: 2px;"> 
-            / <span id="totalPages">0</span>
-          </span>
-          <button id="nextPage" class="tool-btn"><i class="fa-solid fa-chevron-right"></i></button>
+          <div class="toolbar-divider"></div>
 
-          <span class="toolbar-divider"></span>
+          <!-- Group 2: Page Navigation -->
+          <div class="page-nav-group">
+            <button class="tool-btn" id="prevPage"><i class="fas fa-chevron-left"></i></button>
+            <input type="number" id="pageNumberInput" value="1" min="1">
+            <span>/ <span id="totalPages">1</span></span>
+            <button class="tool-btn" id="nextPage"><i class="fas fa-chevron-right"></i></button>
+          </div>
 
-          <div class="zoom-control">
-            <i class="fa-solid fa-magnifying-glass-minus"></i>
-            <input type="range" id="zoomSlider" min="50" max="300" value="100" style="width: 100px; cursor: pointer;">
-            <i class="fa-solid fa-magnifying-glass-plus"></i>
+          <div class="toolbar-divider"></div>
+
+          <!-- Group 3: Zoom Controls -->
+          <div class="zoom-group">
+            <i class="fas fa-search-minus"></i>
+            <input type="range" id="zoomSlider" min="50" max="200" value="100">
             <span id="zoomVal">100%</span>
           </div>
 
-          <button id="shareBtn" class="btn-primary-sm" style="margin-left: auto;"><i class="fa-solid fa-share"></i> Share</button>
+          <div class="toolbar-divider"></div>
+
+          <!-- Group 4: Action Buttons -->
+          <button class="btn-share" id="shareBtn">
+            <i class="fas fa-share-alt"></i> Share
+          </button>
         </div>
 
-        <div class="pdf-viewport">
-          <!-- Continuous rendering canvas elements will be injected here -->
-        </div>
+        <div class="pdf-viewport" id="pdfViewport"></div>
       </section>
 
     </main>
