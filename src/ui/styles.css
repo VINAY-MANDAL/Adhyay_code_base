@@ -453,3 +453,169 @@ body {
 .modal-card button {
   width: 100%;
 }
+
+
+/* Card & Row Action Buttons */
+.card-actions-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.three-dots-btn {
+  background: rgba(0,0,0,0.5);
+  border: none;
+  color: #fff;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: 0.2s;
+}
+
+.three-dots-btn:hover {
+  background: var(--accent-color);
+  color: #000;
+}
+
+/* Dropdown Menu Popup */
+.menu-dropdown-container {
+  position: relative;
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 35px;
+  right: 0;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 6px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+  z-index: 100;
+  min-width: 110px;
+}
+
+.delete-pdf-btn {
+  width: 100%;
+  background: transparent;
+  border: none;
+  color: #ff5252;
+  padding: 8px 12px;
+  text-align: left;
+  font-size: 13px;
+  cursor: pointer;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: 0.2s;
+}
+
+.delete-pdf-btn:hover {
+  background: rgba(255, 82, 82, 0.15);
+}
+
+
+/* Views & Extra Page Styling */
+.section-header {
+  margin-bottom: 20px;
+}
+
+.section-header h2 {
+  font-size: 22px;
+  color: var(--text-main);
+  margin-bottom: 4px;
+}
+
+.section-header p {
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+/* Empty State */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 0;
+  color: var(--text-muted);
+  gap: 12px;
+}
+
+.empty-state i {
+  font-size: 40px;
+  color: var(--border-color);
+}
+
+/* Settings View */
+.settings-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 10px 20px;
+  max-width: 650px;
+}
+
+.setting-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.setting-item:last-child {
+  border-bottom: none;
+}
+
+.setting-item h4 {
+  font-size: 14px;
+  margin-bottom: 3px;
+}
+
+.setting-item p {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.setting-item input[type="text"] {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  padding: 8px 12px;
+  border-radius: 6px;
+  outline: none;
+}
+
+/* Custom Action Buttons */
+.btn-primary-sm {
+  background: var(--accent-color);
+  color: #000;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.btn-danger-sm, .btn-danger {
+  background: rgba(255, 82, 82, 0.15);
+  color: #ff5252;
+  border: 1px solid rgba(255, 82, 82, 0.3);
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: 0.2s;
+}
+
+.btn-danger-sm:hover, .btn-danger:hover {
+  background: #ff5252;
+  color: #fff;
+}

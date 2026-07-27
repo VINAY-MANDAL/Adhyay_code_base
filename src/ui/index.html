@@ -85,7 +85,6 @@
       <section id="dashboardView">
         <div class="greeting-header">
           <h2 id="userGreeting">Namaste</h2>
-          <p>Aapne pichli baar jaha chhoda tha, wahi se shuru kare</p>
         </div>
 
         <div class="section-title">
@@ -95,10 +94,79 @@
 
         <div class="recent-files-header">
           <h3 data-i18n="recent_files">Recent files</h3>
-          <a href="#" class="see-all">Sab dekhe</a>
+          <a href="#" class="see-all">see more</a>
         </div>
         <div class="files-list" id="recentFilesList"></div>
       </section>
+
+      <section id="libraryView" class="view-section hidden">
+  <div class="section-header">
+    <h2>Library</h2>
+    <p>Aapki saari uploaded PDFs yahan ek sath hain</p>
+  </div>
+  <div class="cards-grid" id="libraryGrid"></div>
+</section>
+
+<!-- FAVORITES VIEW -->
+<section id="favoritesView" class="view-section hidden">
+  <div class="section-header">
+    <h2>Favorites</h2>
+    <p>Aapki starred/favorite kitabein</p>
+  </div>
+  <div class="cards-grid" id="favoritesGrid"></div>
+</section>
+
+<!-- SHARED VIEW -->
+<section id="sharedView" class="view-section hidden">
+  <div class="section-header">
+    <h2>Shared with me</h2>
+    <p>Aapke sath share ki gayi files</p>
+  </div>
+  <div class="empty-state">
+    <i class="fa-solid fa-share-nodes"></i>
+    <p>Filhal koi shared file nahi hai</p>
+  </div>
+</section>
+
+<!-- TRASH VIEW -->
+<section id="trashView" class="view-section hidden">
+  <div class="section-header">
+    <h2>Trash</h2>
+    <p>Delete ki gayi files (Yahan se permanent delete ya restore karein)</p>
+  </div>
+  <div class="files-list" id="trashList"></div>
+</section>
+
+<!-- SETTINGS VIEW -->
+<section id="settingsView" class="view-section hidden">
+  <div class="section-header">
+    <h2>Settings</h2>
+    <p>App preferences aur profile manage karein</p>
+  </div>
+  <div class="settings-card">
+    <div class="setting-item">
+      <div>
+        <h4>Display Name</h4>
+        <p>Aapka greeting name change karein</p>
+      </div>
+      <input type="text" id="settingNameInput" placeholder="Aapka Naam">
+    </div>
+    <div class="setting-item">
+      <div>
+        <h4>Theme Preference</h4>
+        <p>Light ya Dark mode select karein</p>
+      </div>
+      <button class="btn-primary-sm" id="toggleThemeSetting">Switch Theme</button>
+    </div>
+    <div class="setting-item danger">
+      <div>
+        <h4>Clear Data</h4>
+        <p>Saara stored data aur PDFs reset karein</p>
+      </div>
+      <button class="btn-danger" id="clearAllDataBtn"><i class="fa-solid fa-trash"></i> Reset App Data</button>
+    </div>
+  </div>
+</section>
 
       <!-- 2. READER VIEW -->
       <section id="readerView" class="hidden">
